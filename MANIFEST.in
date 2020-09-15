@@ -1,0 +1,2 @@
+include versioneer.py
+include coc_clan_stats/_version.py
