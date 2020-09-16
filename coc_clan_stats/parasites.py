@@ -1,4 +1,12 @@
-import pandas as pd
+import click
+
+try:
+    import pandas as pd
+except ImportError:
+    click.secho(
+        "Install pandas to use find-parasites command", fg="bright_red", err=True
+    )
+    raise click.Abort()
 
 from .analyse import analyse
 

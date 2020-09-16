@@ -6,7 +6,6 @@ from pendulum import now
 from .config import config
 from .csv_manager import get_tag_map, save_player_records
 from .fetch_data import fetch_player_records
-from .parasites import find_parasites
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -56,6 +55,8 @@ def get_command():
 
 @main.command("find-parasites")
 def find_parasites_command():
+    from .parasites import find_parasites
+
     find_parasites()
 
 
