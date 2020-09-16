@@ -1,7 +1,9 @@
 import csv
+from datetime import timedelta
 from pathlib import Path
 from typing import List
 
+from cachier import cachier
 import click
 import requests
 
@@ -35,12 +37,12 @@ def get_tag_map(local=False):
     return real_map
 
 
+@cachier(pickle_reload=False, stale_after=timedelta(minutes=15))
 def get_csv(local=False) -> str:
     if local:
         return Path(config.csv_path).read_text()
 
     click.echo("Fetching data from remote...")
     return requests.get(
-        "https://sralloza.es/coc-clan-stats",
-        headers={"user-agent": "coc-clan-stats"},
+        "https://sralloza.es/coc-clan-stats", headers={"user-agent": "coc-clan-stats"}
     ).text

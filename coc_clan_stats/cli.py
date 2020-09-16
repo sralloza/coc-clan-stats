@@ -5,7 +5,7 @@ import click
 from pendulum import now
 
 from .config import config
-from .csv_manager import get_tag_map, save_player_records
+from .csv_manager import get_csv, get_tag_map, save_player_records
 from .fetch_data import fetch_player_records
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -58,16 +58,26 @@ def analyse_command(freq, local, all_):
 
     try:
         df = analyse(freq, local)
-        print(df)
+        click.echo(df)
     except Exception as exc:
         msg = type(exc).__name__ + ": " + str(exc)
         click.secho(msg, fg="bright_red")
         raise click.Abort()
 
 
+@main.command("clear-cache")
+def clear_cache():
+    get_csv.clear_cache()
+    click.echo("Cache cleared")
+
+
 @main.command("tag-map")
 @click.option("--local", is_flag=True)
-def get_command(local):
+@click.option("--clear-cache", "-c", is_flag=True)
+def get_command(local, clear_cache):
+    if clear_cache:
+        get_csv.clear_cache()
+
     click.echo(get_tag_map(local))
 
 
@@ -83,7 +93,7 @@ def find_parasites_command(freq, local, all_):
 
     try:
         df = find_parasites(local=local, freq=freq)
-        print(df)
+        click.echo(df)
     except Exception as exc:
         msg = type(exc).__name__ + ": " + str(exc)
         click.secho(msg, fg="bright_red")
