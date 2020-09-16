@@ -48,9 +48,13 @@ def fetch():
 
 @main.command("analyse")
 @click.option("--local", is_flag=True)
+@click.option("--all", "all_", is_flag=True, flag_value="all")
 @click.argument("freq", nargs=1, required=False, default="1D")
-def analyse_command(freq, local):
+def analyse_command(freq, local, all_):
     from .analyse import analyse
+
+    if all_:
+        freq = all_
 
     try:
         df = analyse(freq, local)
@@ -68,11 +72,22 @@ def get_command():
 
 @main.command("find-parasites")
 @click.option("--local", is_flag=True)
+@click.option("--all", "all_", is_flag=True, flag_value="all")
 @click.argument("freq", nargs=1, required=False, default="1D")
-def find_parasites_command(freq, local):
+def find_parasites_command(freq, local, all_):
     from .parasites import find_parasites
 
-    print(find_parasites(local=local, freq=freq))
+    if all_:
+        freq = all_
+
+
+    try:
+        df = find_parasites(local=local, freq=freq)
+        print(df)
+    except Exception as exc:
+        msg = type(exc).__name__ + ": " + str(exc)
+        click.secho(msg, fg="bright_red")
+        raise click.Abort()
 
 
 @main.command("reset")
