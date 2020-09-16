@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 import click
 from pendulum import now
@@ -22,6 +23,17 @@ def main(config_path):
 def print_config_path():
     path = Path(click.get_app_dir("coc-clan-stats")).joinpath("config.txt")
     click.echo(path)
+
+
+@main.command()
+@click.option("--token", prompt=True)
+def set_token(token):
+    path = Path(click.get_app_dir("coc-clan-stats")).joinpath("config.txt")
+    data = re.sub(
+        r"COC_API_TOKEN=([\w\._]+)", "COC_API_TOKEN=" + token, path.read_text()
+    )
+    path.write_text(data)
+    click.secho("Token set sucessfully", fg="bright_green")
 
 
 @main.command()
