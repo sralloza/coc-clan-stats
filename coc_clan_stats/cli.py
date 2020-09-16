@@ -65,9 +65,10 @@ def analyse_command(freq, local, all_):
         raise click.Abort()
 
 
-@main.command("get-map")
-def get_command():
-    click.echo(get_tag_map())
+@main.command("tag-map")
+@click.option("--local", is_flag=True)
+def get_command(local):
+    click.echo(get_tag_map(local))
 
 
 @main.command("find-parasites")
@@ -79,7 +80,6 @@ def find_parasites_command(freq, local, all_):
 
     if all_:
         freq = all_
-
 
     try:
         df = find_parasites(local=local, freq=freq)

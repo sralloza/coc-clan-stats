@@ -1,8 +1,9 @@
-import click
-import requests
+from io import StringIO
 
-from .config import config
+import click
+
 from .csv_manager import get_tag_map
+from .csv_manager import get_csv
 
 try:
     import numpy as np
@@ -16,20 +17,10 @@ except ImportError:
     click.secho("Install pandas to use analyse command", fg="bright_red", err=True)
     raise click.Abort()
 
-from io import StringIO
-
 
 def get_df(local=False) -> pd.DataFrame:
-    if local:
-        data = config.csv_path
-    else:
-        click.echo("Fetching data from remote...")
-        data = StringIO(
-            requests.get(
-                "https://sralloza.es/coc-clan-stats",
-                headers={"user-agent": "coc-clan-stats"},
-            ).text
-        )
+    csv_str = get_csv(local)
+    data = StringIO(csv_str)
     df = pd.read_csv(data, parse_dates=["timestamp"])
     return df
 
@@ -75,7 +66,7 @@ def analyse(freq="1D", local=False, filter_to_print=True):
 
     # Show the date limits via index and columns' names
     start, end = difs.index.names[-1].split(" - ")
-    difs.index = [get_tag_map()[x[0]] for x in difs.index]
+    difs.index = [get_tag_map(local=local)[x[0]] for x in difs.index]
     difs.index.name = start
     difs.columns.name = end
 

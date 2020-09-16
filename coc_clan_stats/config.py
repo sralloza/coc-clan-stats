@@ -12,8 +12,8 @@ def get_env_var(var):
 
 
 class config:
-    csv_path = None
-    clan_tag = None
+    csv_path = ""
+    clan_tag = ""
 
     @classmethod
     def init_config(cls):

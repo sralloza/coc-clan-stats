@@ -2,6 +2,10 @@ import csv
 from pathlib import Path
 from typing import List
 
+import click
+import requests
+
+from .config import config
 from .config import config
 from .models import PlayerRecord
 
@@ -17,8 +21,8 @@ def save_player_records(players: List[PlayerRecord]):
             file.write(player.to_csv())
 
 
-def get_tag_map():
-    file_data = Path(config.csv_path).read_text("utf8").splitlines()
+def get_tag_map(local=False):
+    file_data = get_csv(local=local).splitlines()
     file_reader = csv.reader(file_data)
     headers = next(file_reader)
     real_map = {}
@@ -29,3 +33,14 @@ def get_tag_map():
             real_map[data["tag"]] = data["player_name"]
 
     return real_map
+
+
+def get_csv(local=False) -> str:
+    if local:
+        return Path(config.csv_path).read_text()
+
+    click.echo("Fetching data from remote...")
+    return requests.get(
+        "https://sralloza.es/coc-clan-stats",
+        headers={"user-agent": "coc-clan-stats"},
+    ).text
