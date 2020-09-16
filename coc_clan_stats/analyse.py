@@ -1,8 +1,13 @@
 import click
-import numpy as np
 
 from .config import config
 from .csv_manager import get_tag_map
+
+try:
+    import numpy as np
+except ImportError:
+    click.secho("Install numpy to use analyse command", fg="bright_red", err=True)
+    raise click.Abort()
 
 try:
     import pandas as pd
