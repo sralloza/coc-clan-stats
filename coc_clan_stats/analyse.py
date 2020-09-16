@@ -1,4 +1,5 @@
 import click
+import requests
 
 from .config import config
 from .csv_manager import get_tag_map
@@ -15,14 +16,26 @@ except ImportError:
     click.secho("Install pandas to use analyse command", fg="bright_red", err=True)
     raise click.Abort()
 
+from io import StringIO
 
-def get_df() -> pd.DataFrame:
-    df = pd.read_csv(config.csv_path, parse_dates=["timestamp"])
+
+def get_df(local=False) -> pd.DataFrame:
+    if local:
+        data = config.csv_path
+    else:
+        click.echo("Fetching data from remote...")
+        data = StringIO(
+            requests.get(
+                "https://sralloza.es/coc-clan-stats",
+                headers={"user-agent": "coc-clan-stats"},
+            ).text
+        )
+    df = pd.read_csv(data, parse_dates=["timestamp"])
     return df
 
 
-def analyse(freq="1H", filter_to_print=True):
-    df = get_df()
+def analyse(freq="1D", local=False, filter_to_print=True):
+    df = get_df(local=local)
 
     # Remove useless columns, the rank and the previous rank
     df.drop(columns=["clan_rank", "previous_clan_rank"], inplace=True)
