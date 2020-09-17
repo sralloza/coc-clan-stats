@@ -7,8 +7,8 @@ def get_env_var(var):
     try:
         var = "COC_CLAN_STATS_" + var.upper().replace("-", "_")
         return os.environ[var]
-    except KeyError:
-        raise click.ClickException(f"Must define variable {var!r}")
+    except KeyError as exc:
+        raise click.ClickException(f"Must define variable {var!r}") from exc
 
 
 class config:

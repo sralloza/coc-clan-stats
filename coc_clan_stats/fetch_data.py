@@ -24,7 +24,7 @@ def request_coc_api(url):
 
     if not response.ok:
         msg = "Invalid response: " + str(response.json())
-        raise click.ClickException(msg)
+        raise RuntimeError(msg)
 
     return response
 

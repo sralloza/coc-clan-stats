@@ -8,7 +8,6 @@ import click
 import requests
 
 from .config import config
-from .config import config
 from .models import PlayerRecord
 
 

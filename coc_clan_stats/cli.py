@@ -66,7 +66,7 @@ def analyse_command(freq, local, all_):
 
 
 @main.command("clear-cache")
-def clear_cache():
+def clear_cache_command():
     get_csv.clear_cache()
     click.echo("Cache cleared")
 
