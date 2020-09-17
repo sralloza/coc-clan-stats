@@ -6,7 +6,7 @@ from pendulum import now
 
 from .config import config
 from .csv_manager import get_csv, get_tag_map, save_player_records
-from .fetch_data import fetch_player_records
+from .fetch_data import fetch_player_records, get_current_players
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -107,6 +107,12 @@ def reset_csv():
         click.secho("File removed", fg="bright_green")
     except FileNotFoundError:
         click.secho("File didn't exist", fg="bright_yellow")
+
+
+@main.command("current-players")
+def show_current_players():
+    players = get_current_players()
+    click.echo(players)
 
 
 def cli():

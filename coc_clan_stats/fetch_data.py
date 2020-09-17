@@ -37,6 +37,11 @@ def request_player_data(player_tag):
     return request_coc_api(PLAYER_ENDPOINT.format(quote(player_tag)))
 
 
+def get_current_players() -> List[str]:
+    clan_response = request_clan_data()
+    return [x["name"] for x in clan_response.json()["items"]]
+
+
 def fetch_player_records() -> List[PlayerRecord]:
     clan_response = request_clan_data()
     json_response = clan_response.json()["items"]

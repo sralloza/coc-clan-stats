@@ -2,6 +2,8 @@ from io import StringIO
 
 import click
 
+from coc_clan_stats.fetch_data import get_current_players
+
 from .csv_manager import get_tag_map
 from .csv_manager import get_csv
 
@@ -29,6 +31,7 @@ def get_df(local=False) -> pd.DataFrame:
 
 def analyse(freq="1D", local=False, filter_to_print=True):
     df = get_df(local=local)
+    df = filter_players_in_clan(df)
 
     # Remove useless columns, the rank and the previous rank
     df.drop(columns=["clan_rank", "previous_clan_rank"], inplace=True)
@@ -99,3 +102,9 @@ def analyse(freq="1D", local=False, filter_to_print=True):
         # Remove lines with zeros
         difs = difs.replace(0, np.nan).dropna(how="all").fillna("-")
     return difs
+
+
+def filter_players_in_clan(data):
+    current_players = get_current_players()
+    mask = data.apply(lambda x: x.player_name in current_players, 1)
+    return data[mask]
