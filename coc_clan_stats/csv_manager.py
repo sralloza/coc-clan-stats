@@ -40,7 +40,7 @@ def get_tag_map(local=False):
 @cachier(pickle_reload=False, stale_after=timedelta(minutes=15))
 def get_csv(local=False) -> str:
     if local:
-        return Path(config.csv_path).read_text()
+        return Path(config.csv_path).read_text(encoding="utf8")
 
     click.echo("Fetching data from remote...")
     return requests.get(
