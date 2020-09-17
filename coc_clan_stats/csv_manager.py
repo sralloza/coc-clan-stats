@@ -37,7 +37,7 @@ def get_tag_map(local=False):
     return real_map
 
 
-@cachier(pickle_reload=False, stale_after=timedelta(minutes=15))
+@cachier(pickle_reload=False, stale_after=timedelta(minutes=5))
 def get_csv(local=False) -> str:
     if local:
         return Path(config.csv_path).read_text(encoding="utf8")

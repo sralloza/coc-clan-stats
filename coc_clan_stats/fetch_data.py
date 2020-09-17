@@ -1,8 +1,10 @@
 from datetime import datetime
+from datetime import timedelta
 import os
 from typing import List
 from urllib.parse import quote
 
+from cachier import cachier
 import click
 import requests
 
@@ -14,29 +16,37 @@ PLAYER_ENDPOINT = "https://api.clashofclans.com/v1/players/{}"
 INVALID_KEYS = ["league"]
 
 
-def fetch_player_records() -> List[PlayerRecord]:
+@cachier(pickle_reload=False, stale_after=timedelta(minutes=5))
+def request_coc_api(url):
     token = os.getenv("COC_API_TOKEN")
     headers = {"authorization": f"Bearer {token}"}
-    clan_tag = quote(config.clan_tag)
-    response = requests.get(CLAN_ENDPOINT.format(clan_tag), headers=headers)
+    response = requests.get(url, headers=headers)
 
     if not response.ok:
         msg = "Invalid response: " + str(response.json())
         raise click.ClickException(msg)
 
-    json_response = response.json()["items"]
+    return response
+
+
+def request_clan_data():
+    return request_coc_api(CLAN_ENDPOINT.format(quote(config.clan_tag)))
+
+
+def request_player_data(player_tag):
+    return request_coc_api(PLAYER_ENDPOINT.format(quote(player_tag)))
+
+
+def fetch_player_records() -> List[PlayerRecord]:
+    clan_response = request_clan_data()
+    json_response = clan_response.json()["items"]
 
     players = []
     ts = datetime.now()
     for player in json_response:
-        player_tag = quote(player["tag"])
-        response = requests.get(PLAYER_ENDPOINT.format(player_tag), headers=headers)
+        player_response = request_player_data(player["tag"])
 
-        if not response.ok:
-            msg = "Invalid response: " + str(response.json())
-            raise click.ClickException(msg)
-
-        kwargs = {"warStars": response.json()["warStars"]}
+        kwargs = {"warStars": player_response.json()["warStars"]}
         kwargs["timestamp"] = ts
         for key, value in player.items():
             if key in INVALID_KEYS:
