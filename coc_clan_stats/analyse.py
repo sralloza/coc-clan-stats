@@ -54,8 +54,7 @@ def analyse(freq="1D", local=False, filter_to_print=True):
 
         # At least 2 values must exist to calculate the difference
         if len(group) < 2:
-            msg = f"Not enough data (freq={freq!r}): [{start}] - [{end}]\n\n{group}"
-            raise ValueError(msg)
+            return None
 
         # Calculate the difference
         result = group.diff(1).dropna().iloc[-1:].reset_index(drop=True)
@@ -63,6 +62,8 @@ def analyse(freq="1D", local=False, filter_to_print=True):
         return result
 
     difs = df.groupby("tag").apply(parser)
+    if difs.empty:
+        raise ValueError("Emtpy data")
 
     # Show the date limits via index and columns' names
     start, end = difs.index.names[-1].split(" - ")
