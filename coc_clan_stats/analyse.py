@@ -29,7 +29,7 @@ def get_df(local=False) -> pd.DataFrame:
     return df
 
 
-def analyse(freq="1D", local=False, filter_to_print=True):
+def analyse(freq="1D", local=False, filter_to_print=True, aggressive=True):
     df = get_df(local=local)
     df = filter_players_in_clan(df)
 
@@ -63,13 +63,14 @@ def analyse(freq="1D", local=False, filter_to_print=True):
         if data.empty:
             return None
 
-        if td and data.iloc[0].name - start >= SENSITIVITY:
-            msg = f"Excluding {group.player_name.unique()[0]} (start-time)"
+        player_name = group.player_name.unique()[0]
+        if td and aggressive and data.iloc[0].name - start >= SENSITIVITY:
+            msg = f"Excluding {player_name} (start-time) [{data.iloc[0].name}]"
             click.secho(msg, fg="bright_yellow")
             return None
 
-        if td and end - data.iloc[-1].name >= SENSITIVITY:
-            msg = f"Excluding {group.player_name.unique()[0]} (end-time)"
+        if td and aggressive and end - data.iloc[-1].name >= SENSITIVITY:
+            msg = f"Excluding {player_name} (end-time) [{data.iloc[-1].name}]"
             click.secho(msg, fg="bright_yellow")
             return None
 
@@ -85,10 +86,10 @@ def analyse(freq="1D", local=False, filter_to_print=True):
         raise ValueError("Emtpy data")
 
     # Show the date limits via index and columns' names
-    if td and len(set(starts)) != 1:
+    if td and aggressive and len(set(starts)) != 1:
         raise ValueError(f"Multiple start times: {set(starts)}")
 
-    if td and len(set(ends)) != 1:
+    if td and aggressive and len(set(ends)) != 1:
         raise ValueError(f"Multiple ends times: {set(ends)}")
 
     real_start = pd.to_datetime(pd.to_datetime(starts).values.astype(np.int64).mean())
@@ -101,6 +102,7 @@ def analyse(freq="1D", local=False, filter_to_print=True):
     if filter_to_print:
         # Remove lines with zeros
         difs = difs.replace(0, np.nan).dropna(how="all").fillna("-")
+
     return difs
 
 
