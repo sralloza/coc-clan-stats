@@ -23,7 +23,7 @@ class PlayerAnalisys:
         self.war_stars = data.war_stars
 
 
-def find_parasites(local=False, freq="1D"):
+def find_parasites(freq="1D", local=False):
     df = analyse(freq=freq, local=local, filter_to_print=False)
     df2 = pd.DataFrame(columns=["karma"])
 
