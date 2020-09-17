@@ -17,6 +17,8 @@ except ImportError:
     click.secho("Install pandas to use analyse command", fg="bright_red", err=True)
     raise click.Abort()
 
+SENSITIVITY = pd.Timedelta("1H")
+
 
 def get_df(local=False) -> pd.DataFrame:
     csv_str = get_csv(local)
@@ -34,42 +36,64 @@ def analyse(freq="1D", local=False, filter_to_print=True):
     # Include other data
     df["donations_diff"] = df.donations - df.donations_received
 
+    # In 'all' mode, do not filter data by time
+    if freq == "all":
+        td = None
+        end = None
+        start = None
+    else:
+        td = pd.Timedelta(freq)
+        end = pd.Timestamp.now()
+        start = end - td
+
+    starts = []
+    ends = []
+
     def parser(group: pd.DataFrame):
         group = group.set_index("timestamp")
 
-        # Set index with o'clock times
-        start = group.index.min()
-        end = group.index.max()
-
-        if end - start > pd.Timedelta(hours=2):
-            start = start.ceil("1H")
-            end = end.ceil("1H")
-
-        if freq == "all":
-            new_index = pd.date_range(start=start, end=end, periods=2)
+        if td:
+            data = group[start:end]
         else:
-            new_index = pd.date_range(start=start, end=end, freq=freq)
+            data = group
 
-        group = group.reindex(new_index, method="ffill").select_dtypes(exclude="object")
-
-        # At least 2 values must exist to calculate the difference
-        if len(group) < 2:
+        if data.empty:
             return None
 
-        # Calculate the difference
-        result = group.diff(1).dropna().iloc[-1:].reset_index(drop=True)
-        result.index.name = f"{group.index[-2]} - {group.index[-1]}"
+        if td and data.iloc[0].name - start >= SENSITIVITY:
+            msg = f"Excluding {group.player_name.unique()[0]} (start-time)"
+            click.secho(msg, fg="bright_yellow")
+            return None
+
+        if td and end - data.iloc[-1].name >= SENSITIVITY:
+            msg = f"Excluding {group.player_name.unique()[0]} (end-time)"
+            click.secho(msg, fg="bright_yellow")
+            return None
+
+        starts.append(data.iloc[0].name)
+        ends.append(data.iloc[-1].name)
+
+        result = data.select_dtypes(exclude="object").diff(data.shape[0] - 1).dropna()
         return result
 
     difs = df.groupby("tag").apply(parser)
+
     if difs.empty:
         raise ValueError("Emtpy data")
 
     # Show the date limits via index and columns' names
-    start, end = difs.index.names[-1].split(" - ")
+    if td and len(set(starts)) != 1:
+        raise ValueError(f"Multiple start times: {set(starts)}")
+
+    if td and len(set(ends)) != 1:
+        raise ValueError(f"Multiple ends times: {set(ends)}")
+
+    real_start = pd.to_datetime(pd.to_datetime(starts).values.astype(np.int64).mean())
+    real_end = pd.to_datetime(pd.to_datetime(ends).values.astype(np.int64).mean())
+
     difs.index = [get_tag_map(local=local)[x[0]] for x in difs.index]
-    difs.index.name = start
-    difs.columns.name = end
+    difs.index.name = real_start.round("1T")
+    difs.columns.name = real_end.round("1T")
 
     if filter_to_print:
         # Remove lines with zeros
