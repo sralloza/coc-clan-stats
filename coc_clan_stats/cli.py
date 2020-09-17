@@ -30,7 +30,7 @@ def print_config_path():
 def set_token(token):
     path = Path(click.get_app_dir("coc-clan-stats")).joinpath("config.txt")
     data = re.sub(
-        r"COC_API_TOKEN=([\w\._]+)", "COC_API_TOKEN=" + token, path.read_text()
+        r"COC_API_TOKEN=([\w\._-]+)", "COC_API_TOKEN=" + token, path.read_text()
     )
     path.write_text(data)
     click.secho("Token set sucessfully", fg="bright_green")
