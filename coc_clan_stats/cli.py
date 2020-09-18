@@ -48,13 +48,9 @@ def fetch():
 
 @main.command("analyse")
 @click.option("--local", is_flag=True)
-@click.option("--all", "all_", is_flag=True, flag_value="all")
 @click.argument("freq", nargs=1, required=False, default="1D")
-def analyse_command(freq, local, all_):
+def analyse_command(freq, local):
     from .analyse import analyse
-
-    if all_:
-        freq = all_
 
     try:
         df = analyse(freq, local)
@@ -83,13 +79,9 @@ def get_command(local, clear_cache):
 
 @main.command("find-parasites")
 @click.option("--local", is_flag=True)
-@click.option("--all", "all_", is_flag=True, flag_value="all")
 @click.argument("freq", nargs=1, required=False, default="1D")
-def find_parasites_command(freq, local, all_):
+def find_parasites_command(freq, local):
     from .parasites import find_parasites
-
-    if all_:
-        freq = all_
 
     try:
         df = find_parasites(local=local, freq=freq)
