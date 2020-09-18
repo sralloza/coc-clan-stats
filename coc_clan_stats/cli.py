@@ -4,6 +4,7 @@ import re
 import click
 from pendulum import now
 
+from . import __version__
 from .config import config
 from .csv_manager import get_csv, get_tag_map, save_player_records
 from .fetch_data import fetch_player_records, get_current_players
@@ -12,6 +13,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS, invoke_without_command=True)
+@click.version_option(version=__version__)
 @click.option("--config-path", help="show config path", is_flag=True)
 def main(config_path):
     if config_path:
