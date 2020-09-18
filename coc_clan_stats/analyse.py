@@ -1,11 +1,11 @@
 from io import StringIO
 
 import click
+import pendulum
 
 from coc_clan_stats.fetch_data import get_current_players
 
-from .csv_manager import get_tag_map
-from .csv_manager import get_csv
+from .csv_manager import get_csv, get_tag_map
 
 try:
     import numpy as np
@@ -45,8 +45,12 @@ def analyse(freq="1D", local=False, filter_to_print=True, aggressive=True):
         end = None
         start = None
     else:
-        freq += " 1h"
-        td = pd.Timedelta(freq)
+        if freq == "today":
+            diff = pendulum.now() - pendulum.today()
+            td = pd.Timedelta(diff.as_timedelta())
+        else:
+            freq += " 1h"
+            td = pd.Timedelta(freq)
         end = pd.Timestamp.now()
         start = end - td
 
