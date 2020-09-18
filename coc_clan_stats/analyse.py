@@ -45,6 +45,7 @@ def analyse(freq="1D", local=False, filter_to_print=True, aggressive=True):
         end = None
         start = None
     else:
+        freq += " 1h"
         td = pd.Timedelta(freq)
         end = pd.Timestamp.now()
         start = end - td
