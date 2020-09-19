@@ -3,9 +3,8 @@ from io import StringIO
 import click
 import pendulum
 
-from coc_clan_stats.fetch_data import get_current_players
-
 from .csv_manager import get_csv, get_tag_map
+from .fetch_data import get_current_players
 
 try:
     import numpy as np

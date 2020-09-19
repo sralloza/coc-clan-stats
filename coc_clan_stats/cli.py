@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 
 import click
 from pendulum import now
@@ -7,7 +6,8 @@ from pendulum import now
 from . import __version__
 from .config import config
 from .csv_manager import get_csv, get_tag_map, save_player_records
-from .fetch_data import fetch_player_records, get_current_players
+from .fetch_data import fetch_player_records, get_current_players, request_coc_api
+from .token_manager import set_token
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -27,15 +27,10 @@ def print_config_path():
     click.echo(path)
 
 
-@main.command()
+@main.command("set-token")
 @click.option("--token", prompt=True)
-def set_token(token):
-    path = Path(click.get_app_dir("coc-clan-stats")).joinpath("config.txt")
-    data = re.sub(
-        r"COC_API_TOKEN=([\w\._-]+)", "COC_API_TOKEN=" + token, path.read_text()
-    )
-    path.write_text(data)
-    click.secho("Token set sucessfully", fg="bright_green")
+def set_token_command(token):
+    set_token(token)
 
 
 @main.command()
@@ -66,6 +61,7 @@ def analyse_command(freq, local):
 @main.command("clear-cache")
 def clear_cache_command():
     get_csv.clear_cache()
+    request_coc_api.clear_cache()
     click.echo("Cache cleared")
 
 

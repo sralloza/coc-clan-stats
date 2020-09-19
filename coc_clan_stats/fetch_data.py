@@ -1,16 +1,17 @@
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 import os
 import re
+from time import sleep
 from typing import List
 from urllib.parse import quote
 
 from cachier import cachier
+import click
 import requests
 
 from .config import config
-from .exceptions import RequestError
 from .models import PlayerRecord
+from .token_manager import TokenManager
 
 CLAN_ENDPOINT = "https://api.clashofclans.com/v1/clans/{}/members"
 PLAYER_ENDPOINT = "https://api.clashofclans.com/v1/players/{}"
@@ -24,7 +25,11 @@ def request_coc_api(url):
     response = requests.get(url, headers=headers)
 
     if not response.ok:
+        request_coc_api.clear_cache()
         handle_request_error(response)
+        click.echo("Execute program again")
+        exit()
+        return request_coc_api(url)
 
     return response
 
@@ -33,8 +38,10 @@ def handle_request_error(response: requests.Response):
     json_data = response.json()
 
     ip_match = re.search(r"\d+\.\d+\.\d+\.\d+", json_data["message"])
-    if ip_match:
-        raise RequestError(f"Invalid token for IP {ip_match.group(0)}")
+    if ip_match or "Invalid authorization" in json_data["message"]:
+        click.echo("Updating token")
+        TokenManager.update_token()
+        return
 
     msg = "Invalid response: " + str(response.json())
     raise RuntimeError(msg)
